@@ -4,10 +4,13 @@ matplotlib
 cartopy
 folium
 lxml
-pandas
+pandas~=2.3.3
 owslib
 geopandas
 rasterio
 fiona
 ipyleaflet
 cairosvg
+
+numpy~=2.3.3
+requests~=2.32.4

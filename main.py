@@ -21,7 +21,7 @@ TIME={time}\
 &TileRow={row}"
     url = source + params
     response = requests.get(url)
-    filename = f'{layers[0]}_{datetime.now()}.png'
+    filename = f'{layers[0]}.png'
 
     print(url)
 
