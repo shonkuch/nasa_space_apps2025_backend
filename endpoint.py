@@ -1,7 +1,13 @@
+import os
+
 import requests
 from PIL import Image
 
-def get_image_at(scale, matrix, row, col, time):
+from crop_image_to_point import crop_image_to_point
+from geo_coords_to_tile import MatrixCoords
+
+
+def get_image_at(matrix_coords: MatrixCoords, time):
 
     # layer = "MODIS_Terra_CorrectedReflectance_TrueColor"
     # style = "default"
@@ -14,10 +20,10 @@ def get_image_at(scale, matrix, row, col, time):
 
     layer = "MODIS_Terra_CorrectedReflectance_TrueColor"
     style = "default"
-    tile_matrix_set = scale
-    tile_matrix = matrix
-    tile_row = row
-    tile_col = col
+    tile_matrix_set = "250m"
+    matrix_level = matrix_coords.matrix_level
+    tile_row = matrix_coords.row
+    tile_col = matrix_coords.col
     time = time
     output_format = "jpg"
 
@@ -27,7 +33,7 @@ def get_image_at(scale, matrix, row, col, time):
         f"{style}/"
         f"{time}/"
         f"{tile_matrix_set}/"
-        f"{tile_matrix}/"
+        f"{matrix_level}/"
         f"{tile_row}/"
         f"{tile_col}"
         f".{output_format}"
@@ -36,23 +42,31 @@ def get_image_at(scale, matrix, row, col, time):
     # https://gibs-a.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi?REQUEST=GetCapabilities
     # ^ - for checking available formats
 
+    print(f"Starting at: {matrix_level}: {matrix_coords.row} row, {matrix_coords.col} col")
     response = requests.get(tile_url)
     print(tile_url)
 
     if response.status_code == 200:
-        with open(f"{matrix}_{row}_{col}.jpg", "wb") as f:
+        os.makedirs("results", exist_ok=True)
+
+        img_path = f"results\\{matrix_level}_{matrix_coords.row}_{matrix_coords.col}.jpg"
+
+        with open(img_path, "wb") as f:
             f.write(response.content)
+
+            crop_image_to_point(img_path, matrix_coords).save(img_path)
+
         print("Saved")
     else:
         print(f"Failed to fetch tile: HTTP {response.content}")
 
 def recreate_parent(matrix, row, col):
-    get_image_at("250m", matrix, row, col, "2012-07-09")
+    get_image_at(matrix, row, col, "2012-07-09")
     names = []
     for i in range(2):
         for j in range(2):
             names.append(f"{matrix+1}_{i+(2*row)}_{j+(2*col)}.jpg")
-            get_image_at("250m", matrix+1, i+(2*row), j+(2*col), "2012-07-09")
+            get_image_at(matrix+1, i+(2*row), j+(2*col), "2012-07-09")
 
     images = [Image.open(path) for path in names]
     cols = 2
@@ -71,7 +85,7 @@ def recreate_parent(matrix, row, col):
     combined.save("patched.jpg")
 
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
     # Calculates coordinates for children and joins them to resemble original image
-    recreate_parent(3, 0, 4)
+    #recreate_parent(3, 0, 4)
 
