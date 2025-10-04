@@ -1,0 +1,13 @@
+scikit-image
+scikit-learn
+matplotlib
+cartopy
+folium
+lxml
+pandas
+owslib
+geopandas
+rasterio
+fiona
+ipyleaflet
+cairosvg
