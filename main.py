@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import requests
 
 def download_image(time, layers, size, matrix, col, row):
-    print(f'Downloading {layers}')
+    print(f'Downloading {layers}', end=" - ")
     source = f"https://gibs-a.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi?"
     params = f"\
 TIME={time}\
@@ -23,7 +23,7 @@ TIME={time}\
     response = requests.get(url)
     filename = f'{layers[0]}.png'
 
-    print(url)
+    print(time, size, matrix, row, col, end=" - ")
 
     if response.status_code == 200:
         with open(filename, "wb") as f:
@@ -31,22 +31,6 @@ TIME={time}\
         print(f"Downloaded {filename}")
     else:
         print("Failed to download")
-
-
-# def download_image(layers: list[str]):
-#     wms = WebMapService('https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?', version='1.1.1')
-#     img = wms.getmap(layers=layers,  # Layers
-#         srs='epsg:4326',  # Map projection
-#         bbox=(-180, -90, 180, 90),  # Bounds
-#         size=(1200, 600),  # Image size
-#         time='2021-08-21',  # Time of data
-#         format='image/png',  # Image format
-#         transparent=True)  # Nodata transparency
-#
-#     # Save output PNG to a file
-#     out = open(f'{layers[0]}_{datetime.now()}.png', 'wb')
-#     out.write(img.read())
-#     out.close()
 
 def main():
     # Construct capability URL.
