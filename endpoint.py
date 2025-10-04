@@ -49,7 +49,7 @@ def get_image_at(matrix_coords: MatrixCoords, time):
     if response.status_code == 200:
         os.makedirs("results", exist_ok=True)
 
-        img_path = f"results\\{matrix_level}_{matrix_coords.row}_{matrix_coords.col}.jpg"
+        img_path = f"results\\{matrix_level}.jpg"
 
         with open(img_path, "wb") as f:
             f.write(response.content)
