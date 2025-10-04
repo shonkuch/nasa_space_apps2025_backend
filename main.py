@@ -1,53 +1,54 @@
-import os
-from io import BytesIO
-from skimage import io
-import requests
 import json
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
-import cartopy.crs as ccrs
-import cartopy
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
-import folium
-import urllib.request
-import urllib.parse
 import xml.etree.ElementTree as xmlet
-import lxml.etree as xmltree
-from PIL import Image as plimg
-from PIL import ImageDraw
 import numpy as np
 import pandas as pd
-from owslib.wms import WebMapService
-from IPython.display import Image, display
-import geopandas as gpd
-from shapely.geometry import box
-import urllib.request
-import rasterio
-from rasterio.mask import mask
-from rasterio.warp import calculate_default_transform, reproject, Resampling
-from rasterio.plot import show
-import fiona
 from datetime import datetime, timedelta
-import asyncio
+import requests
 
-
-def download_image(layers: list[str]):
+def download_image(time, layers, size, matrix, col, row):
     print(f'Downloading {layers}')
-    wms = WebMapService('https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?', version='1.1.1')
-    img = wms.getmap(layers=layers,  # Layers
-        srs='epsg:4326',  # Map projection
-        bbox=(-180, -90, 180, 90),  # Bounds
-        size=(1200, 600),  # Image size
-        time='2021-08-21',  # Time of data
-        format='image/png',  # Image format
-        transparent=True)  # Nodata transparency
+    source = f"https://gibs-a.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi?"
+    params = f"\
+TIME={time}\
+&layer={",".join(layers)}\
+&style=default\
+&tilematrixset={size}\
+&Service=WMTS&Request=GetTile\
+&Version=1.0.0\
+&Format=image%2Fjpeg\
+&TileMatrix={matrix}\
+&TileCol={col}\
+&TileRow={row}"
+    url = source + params
+    response = requests.get(url)
+    filename = f'{layers[0]}_{datetime.now()}.png'
 
-    # Save output PNG to a file
-    out = open(f'{layers[0]}_{datetime.now()}.png', 'wb')
-    out.write(img.read())
-    out.close()
+    print(url)
 
-def collect():
+    if response.status_code == 200:
+        with open(filename, "wb") as f:
+            f.write(response.content)
+        print(f"Downloaded {filename}")
+    else:
+        print("Failed to download")
+
+
+# def download_image(layers: list[str]):
+#     wms = WebMapService('https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?', version='1.1.1')
+#     img = wms.getmap(layers=layers,  # Layers
+#         srs='epsg:4326',  # Map projection
+#         bbox=(-180, -90, 180, 90),  # Bounds
+#         size=(1200, 600),  # Image size
+#         time='2021-08-21',  # Time of data
+#         format='image/png',  # Image format
+#         transparent=True)  # Nodata transparency
+#
+#     # Save output PNG to a file
+#     out = open(f'{layers[0]}_{datetime.now()}.png', 'wb')
+#     out.write(img.read())
+#     out.close()
+
+def main():
     # Construct capability URL.
     wmsUrl = 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetCapabilities'
     response = requests.get(wmsUrl)
@@ -64,5 +65,12 @@ def collect():
     all_layers = pd.Series(all_layers)
     all_layers = all_layers[all_layers.str.contains("MODIS_Terra")].sort_values()
     print(f'Layers: {len(all_layers)}')
+    for layer in all_layers:
+        download_image(
+            datetime(2025, 10, 4, 0, 0, 0).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            [layer],
+            # ['MODIS_Terra_CorrectedReflectance_TrueColor'],
+            "250m", 6, 68, 25)
 
-collect()
+if __name__ == "__main__":
+    main()
