@@ -1,10 +1,18 @@
 import io
 
-from endpoint import get_full_tile
-from geo_coords_to_tile import geo_to_tile, MatrixCoords, find_tile_neighbours
-from matrix_settings import get_matrix_settings
+from pydantic import BaseModel
+
+from master_call import make_master_call
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+
+class Args(BaseModel):
+    lat: str
+    lon: str
+    time: str
+    type: str
+    zoom: int
+
 app = FastAPI()
 
 @app.get("/")
@@ -24,12 +32,17 @@ def default_request():
 
     matrix_type = "250m"
 
-    matrix_settings_dict = get_matrix_settings(matrix_type)
-    keys_list = list(matrix_settings_dict.keys())
-    keys_list.sort()
+    img = make_master_call(lat, lon, matrix_type, 3, "2012-07-09")
 
-    coords: [MatrixCoords] = find_tile_neighbours(geo_to_tile(lat, lon, 3, matrix_type))
-    img = get_full_tile(coords, "2012-07-09")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+
+    return StreamingResponse(buf, media_type="image/png")
+
+@app.get("/at")
+def get_at(args: Args):
+    img = make_master_call(args.lat, args.lon, args.type, args.zoom, args.time)
 
     buf = io.BytesIO()
     img.save(buf, format="PNG")
