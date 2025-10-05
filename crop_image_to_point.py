@@ -19,7 +19,7 @@ def crop_image_to_point(tile_img_path: str, matrix_coords: MatrixCoords):
     right = min(pixel_x + crop_size, tile_width)
     lower = min(pixel_y + crop_size, tile_height)
 
-    #img = img.crop((left, upper, right, lower))
-    draw.rectangle([left, upper, right, lower], outline="red", width=5)
+    img = img.crop((left, upper, right, lower))
+    #draw.rectangle([left, upper, right, lower], outline="red", width=5)
 
     return img

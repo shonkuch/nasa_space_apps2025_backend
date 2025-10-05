@@ -45,3 +45,24 @@ class MatrixCoords:
 
     def __str__(self):
         return f"Tile of level {self.matrix_level}: {self.col} col, {self.row} row"
+
+def find_tile_neighbours(matrix_coords:MatrixCoords):
+    l = matrix_coords.matrix_level
+    c = matrix_coords.col
+    r = matrix_coords.row
+    pixel_x = matrix_coords.pixel_x
+    pixel_y = matrix_coords.pixel_y
+    mw = matrix_settings_250m[l]['MatrixWidth']
+    mh = matrix_settings_250m[l]['MatrixHeight']
+    neighbours = [
+        MatrixCoords(l, (mw + c - 1) % mw, (mh + r - 1) % mh, 0, 0), # Top-left
+        MatrixCoords(l, c, (mh + r - 1) % mh, 0, 0), # Top
+        MatrixCoords(l, (mw + c + 1) % mw, (mh + r - 1) % mh, 0, 0), # Top-right
+        MatrixCoords(l, (mw + c - 1) % mw, r, 0, 0), # Left
+        MatrixCoords(l, c, r, pixel_x + 512, pixel_y + 512),  # Original, pixel_x & pixel_y shifted by 512
+        MatrixCoords(l, (mw + c + 1) % mw, r, 0, 0), # Right
+        MatrixCoords(l, (mw + c - 1) % mw, (mh + r + 1) % mh, 0, 0), # Bottom-left
+        MatrixCoords(l, c, (mh + r + 1) % mh, 0, 0), # Bottom
+        MatrixCoords(l, (mw + c + 1) % mw, (mh + r + 1) % mh, 0, 0) # Bottom-right
+    ]
+    return neighbours
