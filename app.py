@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from master_call import make_master_call
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 class Args(BaseModel):
     lat: str
@@ -15,6 +16,17 @@ class Args(BaseModel):
 
 app = FastAPI()
 
+origins = [
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.get("/")
 def read_root():
     return {"message": "Hello from API!"}
