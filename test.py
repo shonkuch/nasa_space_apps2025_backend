@@ -1,4 +1,4 @@
-from endpoint import get_image_at, get_full_tile
+from endpoint import get_image_at, get_full_tile, get_events
 from geo_coords_to_tile import geo_to_tile, MatrixCoords, find_tile_neighbours
 
 #geo_coords = "64.0 -153.0" # Alaska
@@ -15,5 +15,7 @@ lon = float(geo_coords.split(" ")[1])
 #     img = get_image_at(coords, "2012-07-09")
 
 # for i in range(0, 9):
-coords: [MatrixCoords] = find_tile_neighbours(geo_to_tile(lat, lon, 8))
-img = get_full_tile(coords, "2012-07-09")
+# coords: [MatrixCoords] = find_tile_neighbours(geo_to_tile(lat, lon, 8))
+# img = get_full_tile(coords, "2012-07-09")
+
+print(get_events("volcanoes"))
