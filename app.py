@@ -40,7 +40,7 @@ def default_request():
 
     return StreamingResponse(buf, media_type="image/png")
 
-@app.get("/at")
+@app.post("/at")
 def get_at(args: Args):
     img = make_master_call(args.lat, args.lon, args.type, args.zoom, args.time)
 
