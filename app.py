@@ -17,7 +17,7 @@ class Args(BaseModel):
 app = FastAPI()
 
 origins = [
-    "http://localhost:63343"
+    "*"
 ]
 
 app.add_middleware(
@@ -54,7 +54,7 @@ def default_request():
 
 @app.post("/at")
 def get_at(args: Args):
-    img = make_master_call(args.lat, args.lon, args.type, args.zoom, args.time)
+    img = make_master_call(float(args.lat), float(args.lon), args.type, args.zoom, args.time)
 
     buf = io.BytesIO()
     img.save(buf, format="PNG")
