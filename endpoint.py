@@ -1,72 +1,16 @@
+import io
 import os
 
 import requests
 from PIL import Image
-import pandas as pd
+
 from crop_image_to_point import crop_image_to_point
 from geo_coords_to_tile import MatrixCoords
 
-def get_events(category, time_start="2024-01-01", time_end="2025-01-01"):
-    # seaLakeIce severeStorms volcanoes wildfires
-    params = {
-        "start": time_start,
-        "end": time_end,
-        "category": category
-    }
-    resp = requests.get(f"https://eonet.gsfc.nasa.gov/api/v3/events", params=params)
-    resp.raise_for_status()
-    events = resp.json()["events"]
-    df = pd.DataFrame(events)
-    # https://eonet.gsfc.nasa.gov/api/v3/events/
-    df['geometry'] = df['geometry'].apply(lambda x: x[0])
-    df['lon'] = df['geometry'].apply(lambda x: x['coordinates'][0])
-    df['lat'] = df['geometry'].apply(lambda x: x['coordinates'][1])
-    df.drop(columns=["sources", "description", "geometry", "categories", "link", "closed"], inplace=True)
-    return df.to_json(orient="records", indent=4)
-
-
-def get_image_at(matrix_coords: MatrixCoords, time):
-    layer = "MODIS_Terra_CorrectedReflectance_TrueColor"
-    style = "default"
-    tile_matrix_set = matrix_coords.matrix_type
-    matrix_level = matrix_coords.matrix_level
-    tile_row = matrix_coords.row
-    tile_col = matrix_coords.col
-    time = time
-    output_format = "jpg"
-
-    tile_url = (
-        f"https://gibs-a.earthdata.nasa.gov/wmts/epsg4326/best/"
-        f"{layer}/"
-        f"{style}/"
-        f"{time}/"
-        f"{tile_matrix_set}/"
-        f"{matrix_level}/"
-        f"{tile_row}/"
-        f"{tile_col}"
-        f".{output_format}"
-    )
-
-    # https://gibs-a.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi?REQUEST=GetCapabilities
-    # ^ - for checking available formats
-
-    response = requests.get(tile_url)
-
-    if response.status_code == 200:
-        os.makedirs("results", exist_ok=True)
-
-        img_path = f"results\\{matrix_level}.jpg"
-
-        with open(img_path, "wb") as f:
-            f.write(response.content)
-
-            crop_image_to_point(img_path, matrix_coords).save(img_path)
-    else:
-        print(f"Failed to fetch tile: HTTP {response.content}")
 
 ### Get 3x3 square
 def get_full_tile(matrix_coords_list: [MatrixCoords], time):
-    paths = []
+    images_generated = []
 
     for i in range(len(matrix_coords_list)):
         matrix_coords = matrix_coords_list[i]
@@ -101,28 +45,20 @@ def get_full_tile(matrix_coords_list: [MatrixCoords], time):
             f".{output_format}"
         )
 
-        # https://gibs-a.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi?REQUEST=GetCapabilities
-        # ^ - for checking available formats
-
         response = requests.get(tile_url)
 
         if response.status_code == 200:
             os.makedirs("results", exist_ok=True)
 
-            img_path = f"results\\{matrix_level}_{i}.jpg"
-
-            with open(img_path, "wb") as f:
-                f.write(response.content)
-                paths.append(img_path)
-                #crop_image_to_point(img_path, matrix_coords).save(img_path)
+            img_bytes = io.BytesIO(response.content)
+            img = Image.open(img_bytes)
+            images_generated.append(img)
 
             print(f"Saved: {i+1}/{len(matrix_coords_list)}")
         else:
-            paths.append(None)
-            print(f"Failed to fetch tile: HTTP {response.content}")
+            raise ValueError("Cannot open this link")
 
-    pixel_coords = matrix_coords_list[4] # original image
-    images = [Image.open(path) for path in paths]
+    pixel_coords = matrix_coords_list[4]
     cols = 3
     rows = 3
 
@@ -130,7 +66,7 @@ def get_full_tile(matrix_coords_list: [MatrixCoords], time):
 
     combined = Image.new("RGB", (cols * w, rows * h))
 
-    for i, img in enumerate(images):
+    for i, img in enumerate(images_generated):
         x = (i % cols) * w
         y = (i // cols) * h
         combined.paste(img, (x, y))
@@ -138,6 +74,7 @@ def get_full_tile(matrix_coords_list: [MatrixCoords], time):
     # Save or show
     os.makedirs("results\\combined", exist_ok=True)
     os.makedirs("results\\cropped", exist_ok=True)
-    combined.save(f"results\\combined\\{pixel_coords.matrix_level}_combined.jpg")
-    crop_image_to_point(f"results\\combined\\{pixel_coords.matrix_level}_combined.jpg",
-                        pixel_coords).save(f"results\\cropped\\{pixel_coords.matrix_level}_cropped.jpg")
+    #combined.save(f"results\\combined\\{pixel_coords.matrix_level}_combined.jpg")
+    cropped = crop_image_to_point(combined, pixel_coords)
+    #cropped.save(f"results\\cropped\\{pixel_coords.matrix_level}_cropped.jpg")
+    return cropped

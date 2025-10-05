@@ -1,6 +1,6 @@
 import math
 
-from matrix_settings import matrix_settings_250m, get_matrix_settings
+from matrix_settings import get_matrix_settings
 
 
 def geo_to_tile(lat, lon, matrix_level, matrix_type, top_left=(-180.0, 90.0)):

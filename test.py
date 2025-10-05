@@ -11,10 +11,6 @@ geo_coords = "50.45466 30.5238" # Kyiv
 lat = float(geo_coords.split(" ")[0])
 lon = float(geo_coords.split(" ")[1])
 
-#for i in range(0, 9):
-#    coords: MatrixCoords = geo_to_tile(lat, lon, i)
-#    img = get_image_at(coords, "2012-07-09")
-
 # 250m geographic_with_clouds
 # 1km vegetation
 # 2km temp

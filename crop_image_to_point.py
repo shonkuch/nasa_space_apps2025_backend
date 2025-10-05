@@ -1,11 +1,8 @@
-from PIL import Image, ImageDraw
-
 from geo_coords_to_tile import MatrixCoords
 
 
-def crop_image_to_point(tile_img_path: str, matrix_coords: MatrixCoords):
-    img = Image.open(tile_img_path)
-    draw = ImageDraw.Draw(img)
+def crop_image_to_point(img, matrix_coords: MatrixCoords):
+    #draw = ImageDraw.Draw(img)
     tile_width, tile_height = img.size
 
     pixel_x = matrix_coords.pixel_x

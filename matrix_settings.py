@@ -1,5 +1,3 @@
-import enum
-
 matrix_settings_250m = {
     0: {"ScaleDenominator": 223632905.6114871, "TileWidth": 512, "TileHeight": 512, "MatrixWidth": 2, "MatrixHeight": 1},
     1: {"ScaleDenominator": 111816452.8057436, "TileWidth": 512, "TileHeight": 512, "MatrixWidth": 3, "MatrixHeight": 2},
