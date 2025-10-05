@@ -2,9 +2,27 @@ import os
 
 import requests
 from PIL import Image
-
+import pandas as pd
 from crop_image_to_point import crop_image_to_point
 from geo_coords_to_tile import MatrixCoords
+
+def get_events(category, time_start="2024-01-01", time_end="2025-01-01"):
+    # seaLakeIce severeStorms volcanoes wildfires
+    params = {
+        "start": time_start,
+        "end": time_end,
+        "category": category
+    }
+    resp = requests.get(f"https://eonet.gsfc.nasa.gov/api/v3/events", params=params)
+    resp.raise_for_status()
+    events = resp.json()["events"]
+    df = pd.DataFrame(events)
+    # https://eonet.gsfc.nasa.gov/api/v3/events/
+    df['geometry'] = df['geometry'].apply(lambda x: x[0])
+    df['lon'] = df['geometry'].apply(lambda x: x['coordinates'][0])
+    df['lat'] = df['geometry'].apply(lambda x: x['coordinates'][1])
+    df.drop(columns=["sources", "description", "geometry", "categories", "link", "closed"], inplace=True)
+    return df.to_json(orient="records", indent=4)
 
 
 def get_image_at(matrix_coords: MatrixCoords, time):
