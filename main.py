@@ -49,12 +49,12 @@ def main():
     all_layers = pd.Series(all_layers)
     all_layers = all_layers[all_layers.str.contains("MODIS_Terra")].sort_values()
     print(f'Layers: {len(all_layers)}')
-    for layer in all_layers:
-        download_image(
-            datetime(2025, 10, 4, 0, 0, 0).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            [layer],
+    #for layer in all_layers:
+        #download_image(
+            #datetime(2025, 10, 4, 0, 0, 0).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            #[layer],
             # ['MODIS_Terra_CorrectedReflectance_TrueColor'],
-            "250m", 6, 68, 25)
+            #"250m", 6, 68, 25)
 
 if __name__ == "__main__":
     main()

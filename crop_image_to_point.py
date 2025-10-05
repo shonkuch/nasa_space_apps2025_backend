@@ -10,7 +10,6 @@ def crop_image_to_point(tile_img_path: str, matrix_coords: MatrixCoords):
 
     pixel_x = matrix_coords.pixel_x
     pixel_y = matrix_coords.pixel_y
-    print(f"At {pixel_x}.{pixel_y}")
 
     crop_size = 256
     # Full crop size = 2 * crop_size
