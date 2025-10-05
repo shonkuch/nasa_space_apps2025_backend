@@ -17,13 +17,15 @@ class Args(BaseModel):
 app = FastAPI()
 
 origins = [
-    "*"
+    "http://localhost:63343"
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=False,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 @app.get("/")
 def read_root():
